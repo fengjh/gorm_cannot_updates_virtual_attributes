@@ -27,9 +27,9 @@ type User struct {
 
 // BeforeSave is a hook function provided by gorm package. It is used to:
 // - update user password
-func (user *User) BeforeSave(db *gorm.DB) (err error) {
+func (user *User) BeforeSave(scope *gorm.Scope) (err error) {
 	if user.Password != "" {
-		if err = user.setEncryptedPassword(); err != nil {
+		if err = user.setEncryptedPassword(scope); err != nil {
 			return
 		}
 	}
@@ -37,13 +37,15 @@ func (user *User) BeforeSave(db *gorm.DB) (err error) {
 	return
 }
 
-func (user *User) setEncryptedPassword() error {
+func (user *User) setEncryptedPassword(scope *gorm.Scope) error {
 	pw, err := bcrypt.GenerateFromPassword([]byte(user.Password), 0)
 	if err != nil {
 		return err
 	}
-	user.EncryptedPassword = string(pw)
+
+	scope.SetColumn("EncryptedPassword", string(pw))
 	user.Password = ""
+
 	return nil
 }
 
