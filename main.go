@@ -57,7 +57,7 @@ var ErrInvalidEmailOrPassword = errors.New("invalid username or password")
 func UserAuthenticate(name string, password string) (User, error) {
 	var user User
 	if err := DB.Where("name = ?", name).First(&user).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return user, ErrInvalidEmailOrPassword
 		}
 		return user, err
@@ -75,7 +75,7 @@ func init() {
 
 func initDB() {
 	var err error
-	var db gorm.DB
+	var db *gorm.DB
 
 	dbParams := os.Getenv("DB_PARAMS")
 	if dbParams == "" {
@@ -84,7 +84,7 @@ func initDB() {
 
 	db, err = gorm.Open("postgres", fmt.Sprintf(dbParams))
 	if err == nil {
-		DB = &db
+		DB = db
 	} else {
 		panic(err)
 	}
